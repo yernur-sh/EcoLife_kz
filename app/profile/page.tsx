@@ -11,7 +11,11 @@ export default function ProfilePage() {
   const router = useRouter();
   
   // Firestore деректерін сақтау үшін
-  const [userData, setUserData] = useState({ points: 0, completedCount: 0 });
+  const [userData, setUserData] = useState({ 
+    points: 0, 
+    completedCount: 0, // Осы мәнді тікелей аламыз
+    level: "Эко-бастаушы"
+  });
   const [dataLoading, setDataLoading] = useState(true);
 
   useEffect(() => {
@@ -20,7 +24,7 @@ export default function ProfilePage() {
     }
   }, [loading, isAuthenticated, router]);
 
-  // Дерекқордан ұпайларды тарту
+  // Дерекқордан ұпайларды, деңгейді және тапсырма санын тарту
   useEffect(() => {
     async function fetchStats() {
       if (firebaseUser) {
@@ -31,7 +35,9 @@ export default function ProfilePage() {
             const data = docSnap.data();
             setUserData({
               points: data.points || 0,
-              completedCount: data.completedChallenges ? data.completedChallenges.length : 0
+              // ОСЫ ЖЕР ӨЗГЕРДІ: Тікелей completedCount өрісін оқимыз
+              completedCount: data.completedCount || 0,
+              level: data.level || "Эко-бастаушы" 
             });
           }
         } catch (error) {
@@ -53,67 +59,117 @@ export default function ProfilePage() {
     }
   };
 
+  // Жүктелу экраны
   if (loading || dataLoading) {
     return (
-      <div className="flex justify-center items-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-green-500"></div>
+      <div className="flex justify-center items-center min-h-screen bg-slate-50">
+        <div className="relative flex items-center justify-center">
+          <div className="absolute inset-0 border-4 border-emerald-100 rounded-full"></div>
+          <div className="animate-spin rounded-full h-14 w-14 border-t-4 border-b-4 border-emerald-500 z-10"></div>
+        </div>
       </div>
     );
   }
 
   if (!firebaseUser) return null;
 
-  // Тіркелген күнді пішімдеу (қарапайым нұсқа)
+  // Тіркелген күнді пішімдеу
   const joinDate = firebaseUser.metadata.creationTime 
     ? new Date(firebaseUser.metadata.creationTime).toLocaleDateString('kk-KZ', { month: 'long', year: 'numeric' })
     : 'Жақында';
 
   return (
-    <div className="max-w-4xl mx-auto px-6 py-12">
-      <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
-        <div className="h-32 bg-gradient-to-r from-green-500 to-green-700"></div>
+    <div className="min-h-screen bg-slate-50 pt-12 pb-24 font-sans">
+      <div className="max-w-4xl mx-auto px-6">
         
-        <div className="px-8 pb-8">
-          <div className="relative flex justify-between items-end -mt-12 mb-6">
-            <div className="p-1 bg-white rounded-full">
-              {firebaseUser.photoURL ? (
-                <img 
-                  src={firebaseUser.photoURL} 
-                  alt="Профиль" 
-                  referrerPolicy="no-referrer"
-                  className="w-24 h-24 rounded-full border-4 border-white object-cover shadow-sm"
-                />
-              ) : (
-                <div className="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center text-3xl border-4 border-white shadow-sm">👤</div>
-              )}
-            </div>
+        {/* Профиль Карточкасы */}
+        <div className="bg-white rounded-[2.5rem] shadow-[0_8px_30px_rgb(0,0,0,0.06)] border border-slate-100 overflow-hidden transition-all duration-300">
+          
+          {/* Банер (Градиент фон) */}
+          <div className="h-40 md:h-48 relative overflow-hidden bg-gradient-to-r from-emerald-600 via-emerald-500 to-teal-600">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-white opacity-10 rounded-full blur-3xl -mt-10 -mr-10"></div>
+            <div className="absolute bottom-0 left-0 w-48 h-48 bg-emerald-900 opacity-20 rounded-full blur-2xl -mb-10 -ml-10"></div>
+          </div>
+          
+          <div className="px-8 md:px-12 pb-12">
             
-            <button onClick={handleLogout} className="px-6 py-2 bg-red-50 text-red-600 font-medium rounded-xl hover:bg-red-100 transition-colors border border-red-100">
-              Жүйеден шығу
-            </button>
-          </div>
-
-          <div className="space-y-1">
-            <h1 className="text-2xl font-bold text-gray-900">{firebaseUser.displayName || "Қолданушы"}</h1>
-            <p className="text-gray-500">{firebaseUser.email}</p>
-          </div>
-
-          <hr className="my-8 border-gray-100" />
-
-          {/* ШЫНАЙЫ СТАТИСТИКА */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="p-4 bg-gray-50 rounded-2xl">
-              <p className="text-sm text-gray-500 mb-1">Эко-ұпайлар</p>
-              <p className="text-xl font-bold text-green-700">{userData.points} XP</p>
+            {/* Аватар және Шығу батырмасы */}
+            <div className="relative flex justify-between items-end -mt-16 md:-mt-20 mb-8">
+              
+              {/* Аватар */}
+              <div className="p-1.5 bg-white rounded-full shadow-md z-10 group">
+                {firebaseUser.photoURL ? (
+                  <img 
+                    src={firebaseUser.photoURL} 
+                    alt="Профиль" 
+                    referrerPolicy="no-referrer"
+                    className="w-28 h-28 md:w-32 md:h-32 rounded-full border-4 border-slate-50 object-cover group-hover:scale-105 transition-transform duration-300"
+                  />
+                ) : (
+                  <div className="w-28 h-28 md:w-32 md:h-32 bg-emerald-50 rounded-full flex items-center justify-center text-4xl border-4 border-slate-50 text-emerald-600 group-hover:scale-105 transition-transform duration-300">
+                    👤
+                  </div>
+                )}
+              </div>
+              
+              {/* Жүйеден шығу */}
+              <button 
+                onClick={handleLogout} 
+                className="mb-2 px-6 py-2.5 bg-white text-rose-600 font-bold rounded-xl border-2 border-rose-100 hover:bg-rose-50 hover:border-rose-200 transition-all duration-300 active:scale-95 shadow-sm"
+              >
+                Жүйеден шығу
+              </button>
             </div>
-            <div className="p-4 bg-gray-50 rounded-2xl">
-              <p className="text-sm text-gray-500 mb-1">Орындалған челлендж</p>
-              <p className="text-xl font-bold text-green-700">{userData.completedCount}</p>
+
+            {/* Қолданушы ақпараты */}
+            <div className="space-y-1.5 mb-10">
+              <div className="flex items-center gap-3">
+                <h1 className="text-3xl font-extrabold text-slate-800 tracking-tight">
+                  {firebaseUser.displayName || "Қолданушы"}
+                </h1>
+                <span className="bg-emerald-100 text-emerald-700 text-xs font-bold px-2.5 py-1 rounded-md uppercase tracking-wide">
+                  {userData.level}
+                </span>
+              </div>
+              <p className="text-slate-500 font-medium text-lg">{firebaseUser.email}</p>
             </div>
-            <div className="p-4 bg-gray-50 rounded-2xl">
-              <p className="text-sm text-gray-500 mb-1">Тіркелген күні</p>
-              <p className="text-xl font-bold text-gray-700 capitalize">{joinDate}</p>
+
+            <div className="w-full h-px bg-gradient-to-r from-transparent via-slate-200 to-transparent mb-10"></div>
+
+            {/* СТАТИСТИКА */}
+            <h2 className="text-xl font-extrabold text-slate-800 mb-6">Статистика</h2>
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+              
+              {/* Эко-ұпайлар */}
+              <div className="p-6 bg-emerald-50 rounded-3xl border border-emerald-100 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 flex flex-col relative overflow-hidden">
+                <div className="absolute top-0 right-0 p-4 opacity-20 text-5xl">🌱</div>
+                <p className="text-sm font-bold text-emerald-600/80 uppercase tracking-wider mb-2 relative z-10">Эко-ұпайлар</p>
+                <div className="flex items-baseline gap-1 relative z-10">
+                  <p className="text-4xl font-black text-emerald-700">{userData.points}</p>
+                  <span className="text-emerald-600 font-bold">XP</span>
+                </div>
+              </div>
+
+              {/* Орындалған тапсырмалар саны */}
+              <div className="p-6 bg-blue-50 rounded-3xl border border-blue-100 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 flex flex-col relative overflow-hidden">
+                <div className="absolute top-0 right-0 p-4 opacity-20 text-5xl">🏆</div>
+                <p className="text-sm font-bold text-blue-600/80 uppercase tracking-wider mb-2 relative z-10">Тапсырмалар</p>
+                <div className="flex items-baseline gap-1 relative z-10">
+                  <p className="text-4xl font-black text-blue-700">{userData.completedCount}</p>
+                  <span className="text-blue-600 font-bold">рет</span>
+                </div>
+              </div>
+
+              {/* Тіркелген күні */}
+              <div className="p-6 bg-slate-50 rounded-3xl border border-slate-200 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 flex flex-col relative overflow-hidden">
+                <div className="absolute top-0 right-0 p-4 opacity-20 text-5xl">📅</div>
+                <p className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-2 relative z-10">Тіркелген күні</p>
+                <p className="text-2xl font-extrabold text-slate-700 capitalize relative z-10">{joinDate}</p>
+              </div>
+
             </div>
+
           </div>
         </div>
       </div>

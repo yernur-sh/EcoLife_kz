@@ -1,54 +1,58 @@
 "use client";
 
-import { useState } from "react";
-
-const questions = [
-  {
-    id: 1,
-    question: "Пластик бөтелкенің табиғатта ыдырауына қанша уақыт кетеді?",
-    options: ["50 жыл", "100 жыл", "450 жыл", "1000 жыл"],
-    answer: "450 жыл",
-    info: "Пластик өте ұзақ ыдырайды, сондықтан оны қайта өңдеуге тапсыру маңызды."
-  },
-  {
-    id: 2,
-    question: "Қай қалдық түрін шексіз рет қайта өңдеуге болады?",
-    options: ["Қағаз", "Шыны", "Пластик", "Картон"],
-    answer: "Шыны",
-    info: "Шыны өзінің сапасын жоғалтпай, шексіз рет қайта өңделе береді."
-  },
-  {
-    id: 3,
-    question: "1 тонна макулатура (ескі қағаз) қанша ағашты сақтап қалады?",
-    options: ["5 ағаш", "17 ағаш", "50 ағаш", "100 ағаш"],
-    answer: "17 ағаш",
-    info: "Қағазды қайта өңдеу орман алқаптарын сақтауға тікелей көмектеседі."
-  },
-  {
-    id: 4,
-    question: "Энергияны үнемдейтін шамдарды (лампочка) қайда тастау керек?",
-    options: ["Кәдімгі қоқысқа", "Пластик контейнеріне", "Арнайы қауіпті қалдық жинау нүктесіне", "Өзенге"],
-    answer: "Арнайы қауіпті қалдық жинау нүктесіне",
-    info: "Мұндай шамдарда сынап болады, сондықтан олар ерекше кәдеге жаратуды қажет етеді."
-  }
-];
+import { useState, useEffect } from "react";
+import { useAuth } from "@/hooks/useAuth"; 
+import { db } from "@/lib/firebase"; 
+import { doc, getDoc, setDoc, updateDoc, increment } from "firebase/firestore";
+import quizData from "./quiz.json";
 
 export default function QuizPage() {
+  const { firebaseUser, isAuthenticated } = useAuth();
+  const [questions, setQuestions] = useState<any[]>([]);
   const [currentStep, setCurrentStep] = useState(0);
   const [score, setScore] = useState(0);
   const [showResult, setShowResult] = useState(false);
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
-  const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
+
+  const generateRandomQuestions = () => {
+    const shuffled = [...quizData].sort(() => 0.5 - Math.random());
+    setQuestions(shuffled.slice(0, 5));
+  };
+
+  useEffect(() => {
+    generateRandomQuestions();
+  }, []);
 
   const handleAnswer = (option: string) => {
-    if (selectedOption) return; // Жауап беріліп қойса, ештеңе істемеу
-
+    if (selectedOption || !questions[currentStep]) return;
     setSelectedOption(option);
-    const correct = option === questions[currentStep].answer;
-    setIsCorrect(correct);
-    
-    if (correct) {
+    if (option === questions[currentStep].answer) {
       setScore(score + 1);
+    }
+  };
+
+  // Ұпайды сақтау функциясы
+  const saveQuizResult = async (finalScore: number) => {
+    if (!isAuthenticated || !firebaseUser) return;
+    
+    setIsSaving(true);
+    const xpToAdd = finalScore * 20; // Әр сұраққа 20 XP
+
+    try {
+      const userRef = doc(db, "users", firebaseUser.uid);
+      
+      // increment(xpToAdd) - Firestore-дағы бар ұпайға автоматты түрде қосады
+      await setDoc(userRef, {
+        points: increment(xpToAdd),
+        lastQuizAt: new Date(),
+      }, { merge: true });
+      
+      console.log(`${xpToAdd} XP сәтті қосылды!`);
+    } catch (error) {
+      console.error("Ұпай сақтау кезінде қате кетті:", error);
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -57,62 +61,89 @@ export default function QuizPage() {
     if (next < questions.length) {
       setCurrentStep(next);
       setSelectedOption(null);
-      setIsCorrect(null);
     } else {
       setShowResult(true);
+      saveQuizResult(score); // Викторина біткенде ұпайды сақтау
     }
   };
 
   const resetQuiz = () => {
+    generateRandomQuestions();
     setCurrentStep(0);
     setScore(0);
     setShowResult(false);
     setSelectedOption(null);
-    setIsCorrect(null);
   };
 
+  if (questions.length === 0) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+        <div className="relative flex items-center justify-center">
+          <div className="absolute inset-0 border-4 border-emerald-100 rounded-full"></div>
+          <div className="animate-spin rounded-full h-14 w-14 border-t-4 border-b-4 border-emerald-500 z-10"></div>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-slate-50 pb-20 font-sans">
       {/* Header */}
-      <section className="bg-[#107c41] text-white pt-16 pb-24">
-        <div className="max-w-4xl mx-auto px-6 text-center">
-          <h1 className="text-4xl font-bold mb-4">Эко-Викторина</h1>
-          <p className="text-green-100 opacity-90">Өз біліміңізді тексеріп, табиғатты қорғауға үлес қосыңыз</p>
+      <section className="relative overflow-hidden bg-gradient-to-br from-emerald-800 via-green-700 to-teal-900 text-white pt-16 pb-28">
+        {/* Декоративті фон элементтері */}
+        <div className="absolute top-0 right-0 -mr-20 -mt-20 w-80 h-80 rounded-full bg-white opacity-5 blur-3xl pointer-events-none"></div>
+        <div className="absolute bottom-0 left-0 -ml-20 -mb-20 w-64 h-64 rounded-full bg-emerald-400 opacity-10 blur-3xl pointer-events-none"></div>
+
+        <div className="relative max-w-4xl mx-auto px-6 text-center">
+          <h1 className="text-4xl md:text-5xl font-extrabold mb-4 tracking-tight drop-shadow-sm">
+            Эко-Викторина
+          </h1>
+          <p className="text-emerald-100/90 text-lg font-medium">
+            <span className="inline-block border-b-2 border-emerald-400/60 pb-1">5 сұрақ — 5 мүмкіндік!</span>
+          </p>
         </div>
       </section>
 
-      <div className="max-w-3xl mx-auto px-6 -mt-12">
+      <div className="max-w-3xl mx-auto px-6 -mt-16 relative z-10">
         {!showResult ? (
-          <div className="bg-white rounded-[40px] shadow-xl p-8 md:p-12 border border-gray-100">
-            {/* Progress */}
+          <div className="bg-white rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.06)] p-8 md:p-12 border border-slate-100 transition-all duration-500">
+            {/* Прогресс бар */}
             <div className="flex justify-between items-center mb-8">
-              <span className="text-xs font-bold text-green-600 uppercase tracking-widest">
-                Сұрақ {currentStep + 1} / {questions.length}
+              <span className="text-xs font-bold text-emerald-600 uppercase tracking-widest bg-emerald-50 px-3 py-1.5 rounded-lg border border-emerald-100/50">
+                Сұрақ {currentStep + 1} / 5
               </span>
-              <div className="h-2 w-32 bg-gray-100 rounded-full overflow-hidden">
+              <div className="h-2.5 w-32 md:w-48 bg-slate-100 rounded-full overflow-hidden border border-slate-200/50 shadow-inner">
                 <div 
-                  className="h-full bg-green-500 transition-all duration-500" 
-                  style={{ width: `${((currentStep + 1) / questions.length) * 100}%` }}
+                  className="h-full bg-emerald-500 transition-all duration-700 ease-out shadow-[0_0_10px_rgba(16,185,129,0.4)]" 
+                  style={{ width: `${((currentStep + 1) / 5) * 100}%` }}
                 />
               </div>
             </div>
 
-            {/* Question */}
-            <h2 className="text-2xl font-bold text-gray-900 mb-8 leading-tight">
+            {/* Сұрақ мәтіні */}
+            <h2 className="text-2xl md:text-3xl font-extrabold text-slate-800 mb-8 leading-tight min-h-[64px]">
               {questions[currentStep].question}
             </h2>
 
-            {/* Options */}
-            <div className="space-y-3">
-              {questions[currentStep].options.map((option) => {
-                let buttonStyle = "border-gray-100 bg-gray-50 text-gray-700 hover:border-green-200";
+            {/* Жауап нұсқалары */}
+            <div className="grid grid-cols-1 gap-4">
+              {questions[currentStep].options.map((option: string) => {
+                // Динамикалық стильдер
+                let buttonStyle = "border-slate-200 bg-white text-slate-700 hover:border-emerald-300 hover:bg-emerald-50/50 hover:shadow-sm";
+                let iconStyle = "border-slate-200 text-transparent group-hover:border-emerald-400";
                 
                 if (selectedOption === option) {
-                  buttonStyle = option === questions[currentStep].answer 
-                    ? "border-green-500 bg-green-50 text-green-700" 
-                    : "border-red-500 bg-red-50 text-red-700";
+                  if (option === questions[currentStep].answer) {
+                    buttonStyle = "border-emerald-500 bg-emerald-50 text-emerald-800 shadow-[0_4px_15px_rgb(16,185,129,0.15)] scale-[1.01]";
+                    iconStyle = "bg-emerald-500 border-emerald-500 text-white";
+                  } else {
+                    buttonStyle = "border-rose-500 bg-rose-50 text-rose-800 shadow-[0_4px_15px_rgb(244,63,94,0.15)] scale-[1.01]";
+                    iconStyle = "bg-rose-500 border-rose-500 text-white";
+                  }
                 } else if (selectedOption && option === questions[currentStep].answer) {
-                  buttonStyle = "border-green-500 bg-green-50 text-green-700";
+                  // Басқа қате жауап таңдалғанда дұрыс жауапты көрсету
+                  buttonStyle = "border-emerald-400 bg-emerald-50/60 text-emerald-700 opacity-90";
+                  iconStyle = "bg-emerald-400 border-emerald-400 text-white";
                 }
 
                 return (
@@ -120,72 +151,87 @@ export default function QuizPage() {
                     key={option}
                     onClick={() => handleAnswer(option)}
                     disabled={!!selectedOption}
-                    className={`w-full text-left p-5 rounded-2xl border-2 font-semibold transition-all flex justify-between items-center ${buttonStyle}`}
+                    className={`group w-full text-left p-5 rounded-2xl border-2 font-bold transition-all duration-300 flex justify-between items-center cursor-pointer ${
+                      !selectedOption ? "active:scale-[0.99]" : ""
+                    } ${buttonStyle}`}
                   >
-                    {option}
-                    {selectedOption === option && (
-                      <span>{option === questions[currentStep].answer ? "✅" : "❌"}</span>
-                    )}
+                    <span className="flex-1 pr-4 text-base md:text-lg">{option}</span>
+                    <div className={`w-7 h-7 rounded-full border-2 flex items-center justify-center transition-all duration-300 flex-shrink-0 ${iconStyle}`}>
+                        {selectedOption && (
+                           <span className="text-[14px] font-black">
+                             {option === questions[currentStep].answer ? "✓" : (selectedOption === option ? "✕" : "")}
+                           </span>
+                        )}
+                    </div>
                   </button>
                 );
               })}
             </div>
 
-            {/* Info Box */}
+            {/* Нәтиже мен Келесі батырмасы */}
             {selectedOption && (
-              <div className="mt-8 p-6 bg-blue-50 rounded-2xl border border-blue-100 animate-in fade-in zoom-in duration-300">
-                <p className="text-sm text-blue-800 leading-relaxed">
-                  <span className="font-bold">Білгенге маржан:</span> {questions[currentStep].info}
-                </p>
+              <div className="mt-8 pt-8 border-t border-slate-100 animate-in slide-in-from-bottom-4 duration-500 fade-in">
+                <div className="mb-8 p-6 bg-sky-50 rounded-2xl border border-sky-100 flex gap-4 items-start shadow-sm">
+                    <div className="text-2xl mt-0.5">💡</div>
+                    <div>
+                      <span className="font-bold text-sky-800 uppercase text-xs tracking-wider block mb-1.5">Білгенге маржан:</span> 
+                      <p className="text-sm md:text-base text-sky-900/80 leading-relaxed font-medium">
+                        {questions[currentStep].info}
+                      </p>
+                    </div>
+                </div>
                 <button
                   onClick={nextQuestion}
-                  className="mt-4 w-full bg-[#107c41] text-white font-bold py-4 rounded-xl hover:bg-green-700 transition-all shadow-lg shadow-green-100"
+                  className="w-full bg-emerald-600 text-white font-extrabold text-lg py-4 md:py-5 rounded-2xl hover:bg-emerald-700 hover:shadow-[0_8px_25px_rgba(5,150,105,0.3)] transition-all duration-300 active:scale-[0.98] shadow-lg shadow-emerald-600/20"
                 >
-                  {currentStep + 1 === questions.length ? "Нәтижені көру" : "Келесі сұрақ"}
+                  {currentStep + 1 === 5 ? "НӘТИЖЕНІ КӨРУ" : "КЕЛЕСІ СҰРАҚ"}
                 </button>
               </div>
             )}
           </div>
         ) : (
-          /* Result Card */
-          <div className="bg-white rounded-[40px] shadow-xl p-12 text-center border border-gray-100 animate-in zoom-in duration-500">
-            <div className="text-6xl mb-6">
-              {score === questions.length ? "🏆" : "🌱"}
+          <div className="bg-white rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.06)] p-10 md:p-14 text-center border border-slate-100 animate-in zoom-in-95 duration-500 fade-in">
+            <div className="text-7xl md:text-8xl mb-8 drop-shadow-lg animate-bounce duration-[2000ms]">
+              {score === 5 ? "🏆" : score >= 3 ? "🌱" : "📚"}
             </div>
-            <h2 className="text-3xl font-black text-gray-900 mb-2">Викторина аяқталды!</h2>
-            <p className="text-gray-500 mb-8">Сіздің нәтижеңіз:</p>
+            <h2 className="text-3xl md:text-4xl font-extrabold text-slate-800 mb-3 tracking-tight">Викторина аяқталды!</h2>
+            <p className="text-slate-500 mb-10 font-medium text-lg">
+                {score === 5 ? "Керемет! Сіз нағыз эко-сарапшысыз!" : "Жақсы нәтиже! Біліміңізді толықтыра түсіңіз."}
+            </p>
             
-            <div className="inline-block bg-green-50 px-10 py-6 rounded-[30px] border border-green-100 mb-10">
-              <span className="text-5xl font-black text-[#107c41]">{score}</span>
-              <span className="text-2xl font-bold text-green-300"> / {questions.length}</span>
+            <div className="relative inline-block mb-12 group">
+                <div className="bg-emerald-50 px-14 py-8 rounded-[2.5rem] border-2 border-emerald-100 shadow-sm group-hover:shadow-md transition-shadow">
+                  <span className="text-7xl font-black text-emerald-600">{score}</span>
+                  <span className="text-3xl font-bold text-emerald-300 ml-2">/ 5</span>
+                </div>
+                <div className="absolute -top-4 -right-4 bg-gradient-to-tr from-amber-400 to-orange-500 text-white text-sm font-black px-4 py-1.5 rounded-full shadow-lg border-2 border-white animate-pulse">
+                    +{score * 20} XP
+                </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-lg mx-auto">
               <button
                 onClick={resetQuiz}
-                className="bg-gray-100 text-gray-700 font-bold py-4 rounded-2xl hover:bg-gray-200 transition-all"
+                className="bg-slate-50 text-slate-700 border border-slate-200 font-bold py-4 rounded-2xl hover:bg-slate-100 hover:text-slate-900 transition-all active:scale-95"
               >
-                Қайта бастау
+                ТАҒЫ КӨРУ
               </button>
               <button
                 onClick={() => window.location.href = "/"}
-                className="bg-[#107c41] text-white font-bold py-4 rounded-2xl hover:bg-green-800 transition-all shadow-lg shadow-green-100"
+                className="bg-emerald-600 text-white font-extrabold py-4 rounded-2xl hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-600/20 active:scale-95 hover:shadow-xl hover:shadow-emerald-600/30"
               >
-                Басты бетке
+                БАСТЫ БЕТКЕ
               </button>
             </div>
+            {isSaving && (
+              <p className="mt-6 text-sm font-medium text-emerald-600 flex items-center justify-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
+                Ұпайлар сақталуда...
+              </p>
+            )}
           </div>
         )}
       </div>
-
-      {/* Footer Info */}
-      {!showResult && (
-        <div className="max-w-3xl mx-auto px-6 mt-12 text-center">
-          <p className="text-gray-400 text-sm font-medium">
-            Викторинадан өткен сайын сіздің эко-рейтингіңіз өседі! 🚀
-          </p>
-        </div>
-      )}
     </div>
   );
 }
