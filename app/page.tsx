@@ -60,6 +60,44 @@ export default function HomePage() {
                 Нүктелерді тап
               </Link>
             </div>
+
+            {/* ЖОБА АВТОРЛАРЫ (КӨЗГЕ КӨРІНЕТІН ЖЕРДЕ) */}
+            <div className="inline-flex flex-col sm:flex-row items-start sm:items-center gap-6 sm:gap-10 bg-white/10 backdrop-blur-md border border-white/20 rounded-[2rem] p-6 shadow-2xl animate-in fade-in slide-in-from-bottom-8 duration-1000 mt-13">
+              
+              {/* Оқушы */}
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-full bg-emerald-400/20 flex items-center justify-center text-xl shadow-inner border border-emerald-300/30 flex-shrink-0">
+                  🎓
+                </div>
+                <div className="text-left">
+                  <p className="text-[10px] font-black uppercase tracking-widest text-emerald-200/80 mb-0.5">
+                    Орындаған (Оқушы)
+                  </p>
+                  <p className="text-base font-bold text-white tracking-tight">
+                    Серікбаева Гаухар
+                  </p>
+                </div>
+              </div>
+
+              {/* Бөлгіш сызық (тек компьютерде көрінеді) */}
+              <div className="hidden sm:block w-px h-12 bg-white/20 rounded-full"></div>
+
+              {/* Жетекші */}
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-full bg-emerald-400/20 flex items-center justify-center text-xl shadow-inner border border-emerald-300/30 flex-shrink-0">
+                  👩‍🏫
+                </div>
+                <div className="text-left">
+                  <p className="text-[10px] font-black uppercase tracking-widest text-emerald-200/80 mb-0.5">
+                    Ғылыми жетекші
+                  </p>
+                  <p className="text-base font-bold text-white tracking-tight">
+                    Дауренбекова Жадра Аманшаевна
+                  </p>
+                </div>
+              </div>
+              
+            </div>
           </div>
         </div>
       </section>
