@@ -29,7 +29,7 @@ export default function HomePage() {
   return (
     <div className="bg-slate-50 min-h-screen font-sans">
       {/* Hero */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-emerald-800 via-green-700 to-teal-900 text-white">
+      <section className="relative overflow-hidden bg-gradient-to-br from-emerald-700 via-green-600 to-teal-800 text-white">
         {/* Декоративті фон элементтері */}
         <div className="absolute top-0 right-0 -mr-20 -mt-20 w-96 h-96 rounded-full bg-white opacity-5 blur-3xl pointer-events-none"></div>
         <div className="absolute bottom-0 left-0 -ml-20 -mb-20 w-80 h-80 rounded-full bg-emerald-400 opacity-10 blur-3xl pointer-events-none"></div>

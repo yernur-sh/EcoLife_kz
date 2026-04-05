@@ -9,7 +9,7 @@ const diyVideos = [
     id: 1,
     title: "Пластик бөтелкеден құмыра",
     desc: "Өзін-өзі суаратын ақылды гүл құмырасын жасаудың ең оңай тәсілі.",
-    videoId: "mX56H2RMBZ4", // Мысал YouTube ID (өзіңіз ауыстыра аласыз)
+    videoId: "FBkTebYAYrQ", // Мысал YouTube ID (өзіңіз ауыстыра аласыз)
     category: "Пластик",
     icon: "🥤",
     duration: "5:20"
@@ -18,7 +18,7 @@ const diyVideos = [
     id: 2,
     title: "Ескі футболкадан эко-сөмке",
     desc: "Ине-жіпсіз, ескі футболкадан дүкенге ұстап баратын мата сөмке жасау.",
-    videoId: "2vR4m1PZ6B0",
+    videoId: "vUiKohvnMnI",
     category: "Мата",
     icon: "👕",
     duration: "3:45"
@@ -27,16 +27,16 @@ const diyVideos = [
     id: 3,
     title: "Газеттен тоқылған себет",
     desc: "Керек емес газет-журналдарды пайдаланып, зат сақтайтын себет тоқу.",
-    videoId: "B3r3T5gC18I",
+    videoId: "vadzgPYkQUE",
     category: "Қағаз",
     icon: "📰",
     duration: "10:15"
   },
   {
     id: 4,
-    title: "Шыны құтыдан (банка) шамдал",
-    desc: "Кәдімгі бос шыны банкадан бөлмеге әдемі жарық беретін шамдал (фонарь) жасау.",
-    videoId: "F4iP11-iNFI",
+    title: "Шыны құтыдан декор",
+    desc: "Кәдімгі бос шыны банкадан бөлмеге әдемі декор жасау",
+    videoId: "iAHEiE4AjbE",
     category: "Шыны",
     icon: "🫙",
     duration: "6:30"
@@ -45,7 +45,7 @@ const diyVideos = [
     id: 5,
     title: "Картон қораптан органайзер",
     desc: "Аяқ киім немесе пошта қораптарынан үстел үстіндегі заттарға арналған органайзер.",
-    videoId: "Gz3GqR3z8u8",
+    videoId: "spiUIkO4Lqs",
     category: "Қағаз",
     icon: "📦",
     duration: "8:00"
@@ -54,7 +54,7 @@ const diyVideos = [
     id: 6,
     title: "Пластик қақпақтардан мозаика",
     desc: "Түрлі-түсті пластик қақпақтарды ерітіп немесе желімдеп, әдемі тұғыр жасау.",
-    videoId: "W5rO6N0H8E4",
+    videoId: "6wx8sE0TLr8",
     category: "Пластик",
     icon: "🔵",
     duration: "7:10"

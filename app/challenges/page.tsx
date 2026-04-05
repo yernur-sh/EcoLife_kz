@@ -142,13 +142,15 @@ export default function ChallengesPage() {
   return (
     <div className="bg-white min-h-screen">
       {/* Hero Section */}
-      <section className="bg-gradient-to-br from-green-800 to-emerald-900 text-white relative overflow-hidden">
-        <div className="max-w-7xl mx-auto px-6 py-16 relative z-10">
+      <section className="bg-gradient-to-br from-emerald-700 via-green-600 to-teal-800 text-white relative py-12 md:py-20 overflow-hidden">
+        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-white/10 rounded-full blur-[100px] -mr-48 -mt-48 pointer-events-none" />
+        
+        <div className="max-w-7xl mx-auto px-6 relative z-10">
           <div className="grid md:grid-cols-2 gap-12 items-center">
             <div>
               <h1 className="text-4xl md:text-5xl font-extrabold mb-6 leading-tight uppercase tracking-tight">
                 Эко-челлендждер: <br />
-                <span className="text-green-400">Әлемді бірге өзгерт</span>
+                <span className="text-green-300">Әлемді бірге өзгерт</span>
               </h1>
               <p className="text-green-100 text-lg mb-8 opacity-90 font-medium">
                 Тапсырмаларды орындап, ұпай жина және жаңа деңгейлерге көтеріл.
@@ -168,7 +170,7 @@ export default function ChallengesPage() {
               <div className="flex justify-between items-center mb-6">
                 <div>
                   <p className="text-green-300 text-xs font-bold uppercase tracking-widest">Қазіргі деңгей</p>
-                  <h2 className={`text-3xl font-black flex items-center gap-2 ${currentLevel.color}`}>
+                  <h2 className={`text-3xl font-black flex items-center gap-2 text - white`}>
                     {currentLevel.icon} {currentLevel.name}
                   </h2>
                 </div>
