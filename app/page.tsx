@@ -92,7 +92,7 @@ export default function HomePage() {
                     Ғылыми жетекші
                   </p>
                   <p className="text-base font-bold text-white tracking-tight">
-                    Дауренбекова Жадра Аманшаевна
+                    Дауренбекова Жадыра Аманшаевна
                   </p>
                 </div>
               </div>
