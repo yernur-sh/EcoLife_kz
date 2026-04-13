@@ -9,7 +9,7 @@ const diyVideos = [
     id: 1,
     title: "Пластик бөтелкеден құмыра",
     desc: "Өзін-өзі суаратын ақылды гүл құмырасын жасаудың ең оңай тәсілі.",
-    videoId: "FBkTebYAYrQ", // Мысал YouTube ID (өзіңіз ауыстыра аласыз)
+    videoId: "FBkTebYAYrQ", 
     category: "Пластик",
     icon: "🥤",
     duration: "5:20"
@@ -65,6 +65,7 @@ const categories = ["Барлығы", "Пластик", "Қағаз", "Шыны"
 
 export default function DIYPage() {
   const [activeCategory, setActiveCategory] = useState("Барлығы");
+  const [isVideoModalOpen, setIsVideoModalOpen] = useState(false); // ЖАҢА: ВИДЕО МОДАЛІ ҮШІН СТЕЙТ
 
   // Таңдалған категория бойынша фильтрлеу
   const filteredVideos = activeCategory === "Барлығы" 
@@ -100,11 +101,57 @@ export default function DIYPage() {
         </div>
       </section>
 
-      {/* Main Content */}
+      {/* ЖАҢА ВЕРТИКАЛДЫ ВИДЕО СЕКЦИЯСЫ */}
+      <section className="max-w-7xl mx-auto px-6 pt-12 -mb-4 relative z-20">
+        <div className="bg-white rounded-[2.5rem] p-6 md:p-8 shadow-[0_10px_40px_rgb(0,0,0,0.06)] border border-slate-100 flex flex-col md:flex-row gap-8 items-center animate-in slide-in-from-bottom-10 fade-in duration-700">
+          
+          {/* Текст бөлігі */}
+          <div className="w-full md:w-3/5">
+            <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-teal-50 text-teal-600 text-xl mb-4 border border-teal-100 shadow-sm">
+              🎬
+            </div>
+            <h2 className="text-3xl md:text-4xl font-black text-slate-900 mb-4 tracking-tight uppercase leading-tight">
+              Біздің <br className="hidden md:block" /><span className="text-teal-600">нақты істеріміз</span>
+            </h2>
+            <p className="text-slate-500 font-medium leading-relaxed mb-6 text-base md:text-lg max-w-xl">
+              Сөзден — іске! Біздің оқушылар кәдімгі қалдықтарға қалай екінші өмір сыйлап жатқанын осы қысқа видеодан көріңіз. Олар бастады, ендігі кезек — сізде! 
+            </p>
+          </div>
+
+          {/* Вертикалды видео ПРЕВЬЮ */}
+          <div className="w-full md:w-2/5 flex justify-center">
+            <div 
+              className="relative w-full max-w-[240px] aspect-[9/16] rounded-[2rem] overflow-hidden shadow-[0_15px_40px_rgba(0,0,0,0.15)] border-[5px] border-slate-50 bg-slate-900 group cursor-pointer"
+              onClick={() => setIsVideoModalOpen(true)}
+            >
+              <video
+                className="w-full h-full object-cover opacity-90 group-hover:opacity-100 transition-opacity duration-500"
+                autoPlay
+                loop
+                muted
+                playsInline
+              >
+                {/* Бейнеролик атауын өз файлыңызға қарай өзгертіңіз */}
+                <source src="/diy-video.mp4" type="video/mp4" />
+              </video>
+              
+              {/* Ойнату батырмасы (Overlay) */}
+              <div className="absolute inset-0 flex items-center justify-center bg-black/10 group-hover:bg-black/30 transition-colors duration-300">
+                <div className="w-16 h-16 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center border border-white/40 shadow-lg transform group-hover:scale-110 transition-transform duration-300">
+                  <span className="text-3xl text-white translate-x-1">▶</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      {/* Main Content (YouTube Видеолар торы) */}
       <section className="max-w-7xl mx-auto px-6 py-16">
         
         {/* Категориялар (Фильтр) */}
-        <div className="flex flex-wrap gap-3 mb-12 justify-center md:justify-start">
+        <div className="flex flex-wrap gap-3 mb-12 justify-center md:justify-start mt-6">
           {categories.map((category) => (
             <button
               key={category}
@@ -198,6 +245,38 @@ export default function DIYPage() {
           </Link>
         </div>
       </section>
+
+      {/* ЖАҢА: ТОЛЫҚ ЭКРАНДЫ ВИДЕО МОДАЛІ */}
+      {isVideoModalOpen && (
+        <div 
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/95 backdrop-blur-md p-4 animate-in fade-in duration-300"
+          onClick={() => setIsVideoModalOpen(false)}
+        >
+          {/* Вертикалды пропорцияны күштеп сақтайтын контейнер */}
+          <div 
+            className="relative h-full max-h-[90vh] aspect-[9/16] rounded-[2rem] md:rounded-[3rem] overflow-hidden shadow-2xl border-4 border-slate-800 bg-black animate-in zoom-in-95 duration-300" 
+            onClick={e => e.stopPropagation()}
+          >
+            <video
+              className="w-full h-full object-cover"
+              controls
+              autoPlay
+              playsInline
+            >
+              {/* Бейнеролик атауын өз файлыңызға қарай өзгертіңіз */}
+              <source src="/diy.mp4" type="video/mp4" />
+            </video>
+            
+            {/* Жабу батырмасы */}
+            <button 
+              onClick={() => setIsVideoModalOpen(false)}
+              className="absolute top-4 right-4 w-10 h-10 bg-black/40 hover:bg-black/70 text-white rounded-full flex items-center justify-center text-xl font-bold backdrop-blur-md transition-colors z-10 border border-white/20"
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+      )}
 
     </div>
   );
